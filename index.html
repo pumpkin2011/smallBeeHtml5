@@ -20,9 +20,10 @@
       // 将默认的缩放模式定义为Nearest，这样就不会太模糊
       // PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
       // 通过自动选择的方式创建画布（800x450）
-      var renderer = PIXI.autoDetectRenderer(stageWidth, stageHeight, {backgroundColor: 0x000000});
+      const app = new PIXI.application();
+      // var renderer = PIXI.autoDetectRenderer(stageWidth, stageHeight, {backgroundColor: 0x000000});
 
-      document.body.appendChild(renderer.view);
+      document.body.appendChild(app.view);
       // 创建舞台container
       var stage = new PIXI.Container();
       //创建图片精灵，以便在画面上显示些东西
@@ -39,13 +40,15 @@
       player.scale.y = 0.5;
       stage.addChild(player);
 
-      var contentWidth = 44.8 * 10 + 70 * 9;
+      var contentWidth = 51.2 + 70 * 9;
       var leftWhiteSpcae = (stageWidth - contentWidth) / 2;
+      console.log(stageWidth);
+      console.log(contentWidth);
       for(var i=0; i<4; i++) {
         for (var j=0; j<10; j++) {
           var enemy = new PIXI.Sprite.fromImage('./assets/img/enemy_2.png');
           enemy.anchor.set(0.5);
-          enemy.position.set(leftWhiteSpcae+50*(j+1), 70*i+50);
+          enemy.position.set(leftWhiteSpcae+70*j, 70*i+50);
           enemy.scale.x = 0.4;
           enemy.scale.y = 0.35;
           stage.addChild(enemy);
@@ -72,6 +75,9 @@
             break;
           case 40:
             break;
+          case 32:
+            shoot(player, 1);
+            break;
         }
       }
 
@@ -79,6 +85,17 @@
         object.x = object.x + distance;
         console.log(object.x + ' **** ' + distance);
       }
+
+      function shoot (object, dir) {
+        var x = object.x;
+        var bullet = new PIXI.Graphics();
+        bullet.beginFill(0xFFFF00);
+        bullet.lineStyle(1, 0xFFFF00);
+        bullet.drawRect(x, stageHeight-100, 2, 8);
+        stage.addChild(bullet);
+      }
+
+
     </script>
 
   </body>
