@@ -17,33 +17,29 @@
       // stage宽和高
       var stageHeight = window.innerHeight;
       var stageWidth  = window.innerWidth;
+      var pressedKeys = {};
       // 将默认的缩放模式定义为Nearest，这样就不会太模糊
       // PIXI.SCALE_MODES.DEFAULT = PIXI.SCALE_MODES.NEAREST;
       // 通过自动选择的方式创建画布（800x450）
-      const app = new PIXI.application();
-      // var renderer = PIXI.autoDetectRenderer(stageWidth, stageHeight, {backgroundColor: 0x000000});
-
+      const app = new PIXI.Application(stageWidth, stageHeight);
       document.body.appendChild(app.view);
-      // 创建舞台container
-      var stage = new PIXI.Container();
+
       //创建图片精灵，以便在画面上显示些东西
       // var background = new PIXI.Sprite.fromImage('./assets/img/BackDrop_01.png');
       // background.width = renderer.width;
       // background.height = renderer.height;
       // stage.addChild(background);
       // 创建一个玩家精灵
-      var player = new PIXI.Sprite.fromImage('./assets/img/plane.png');
+      const player = new PIXI.Sprite.fromImage('./assets/img/plane.png');
       player.position.set(stageWidth/2, stageHeight - 50);
       // 将中心点固定在角色图片的中心
       player.anchor.set(0.5);
       player.scale.x = 0.5;
       player.scale.y = 0.5;
-      stage.addChild(player);
+      app.stage.addChild(player);
 
       var contentWidth = 51.2 + 70 * 9;
       var leftWhiteSpcae = (stageWidth - contentWidth) / 2;
-      console.log(stageWidth);
-      console.log(contentWidth);
       for(var i=0; i<4; i++) {
         for (var j=0; j<10; j++) {
           var enemy = new PIXI.Sprite.fromImage('./assets/img/enemy_2.png');
@@ -51,27 +47,24 @@
           enemy.position.set(leftWhiteSpcae+70*j, 70*i+50);
           enemy.scale.x = 0.4;
           enemy.scale.y = 0.35;
-          stage.addChild(enemy);
+          app.stage.addChild(enemy);
         }
       }
 
-      animate();
-      // 动画
-      function animate() {
-        requestAnimationFrame(animate);
-        // 渲染Container
-        renderer.render(stage);
-      }
-
+      var speed = 10;
       document.onkeydown = function (e) {
         switch (e.keyCode) {
           case 37:
-            move(player, -10);
+            if (isKeyPressed(37)) return;
+            pressedKeys[38] = false;
+            palyerMove(-speed);
             break;
           case 38:
             break;
           case 39:
-            move(player, 10);
+            if (isKeyPressed(39)) return;
+            pressedKeys[37] = false;
+            palyerMove(speed);
             break;
           case 40:
             break;
@@ -81,19 +74,60 @@
         }
       }
 
-      function move (object, distance) {
-        object.x = object.x + distance;
-        console.log(object.x + ' **** ' + distance);
+      document.onkeyup = function (e) {
+        switch (e.keyCode) {
+          case 37:
+            playerStop(37);
+            break;
+          case 38:
+            break;
+          case 39:
+            playerStop(39);
+            break;
+          case 40:
+            break;
+          case 32:
+            break;
+        }
       }
 
+      // 将player的动画加入队列
+      function palyerMove (value) {
+        playerAnimation = () => {
+          player.x += value
+        }
+        app.ticker.add(playerAnimation);
+      }
+      // 移出
+      function playerStop (key) {
+        app.ticker.remove(playerAnimation);
+        pressedKeys[key] = false;
+      }
+      // 判断当前的按键
+      function isKeyPressed (keyCode) {
+        if (pressedKeys[keyCode] === true) {
+          return true;
+        }
+        pressedKeys[keyCode] = true;
+        return false;
+      }
+
+      // var bullet;
       function shoot (object, dir) {
-        var x = object.x;
         var bullet = new PIXI.Graphics();
         bullet.beginFill(0xFFFF00);
         bullet.lineStyle(1, 0xFFFF00);
-        bullet.drawRect(x, stageHeight-100, 2, 8);
-        stage.addChild(bullet);
+        bullet.drawRect(player.x, stageHeight-100, 2, 8);
+        app.stage.addChild(bullet);
+        var timestamp = (new Date()).getTime();
+        window[timestamp] = () => {
+          bullet.y -= 1;
+        };
+        setTimeout(()=>{app.ticker.remove(window[timestamp])}, 1000);
+        app.ticker.add(window[timestamp]);
       }
+
+
 
 
     </script>
