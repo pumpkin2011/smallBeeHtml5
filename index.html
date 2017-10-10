@@ -51,19 +51,19 @@
         }
       }
 
-      var speed = 10;
+      const speed = 10;
       document.onkeydown = function (e) {
         switch (e.keyCode) {
           case 37:
             if (isKeyPressed(37)) return;
-            pressedKeys[38] = false;
+            if (pressedKeys[39]) playerStop(39);
             palyerMove(-speed);
             break;
           case 38:
             break;
           case 39:
             if (isKeyPressed(39)) return;
-            pressedKeys[37] = false;
+            if (pressedKeys[37]) playerStop(37);
             palyerMove(speed);
             break;
           case 40:
@@ -100,8 +100,10 @@
       }
       // 移出
       function playerStop (key) {
-        app.ticker.remove(playerAnimation);
-        pressedKeys[key] = false;
+        if (pressedKeys[key]) {
+          app.ticker.remove(playerAnimation);
+          pressedKeys[key] = false;
+        }
       }
       // 判断当前的按键
       function isKeyPressed (keyCode) {
@@ -120,10 +122,14 @@
         bullet.drawRect(player.x, stageHeight-100, 2, 8);
         app.stage.addChild(bullet);
         var timestamp = (new Date()).getTime();
+
         window[timestamp] = () => {
-          bullet.y -= 1;
+          bullet.y -= 10;
+          if (bullet.y < -1000) {
+            app.ticker.remove(window[timestamp]);
+          }
         };
-        setTimeout(()=>{app.ticker.remove(window[timestamp])}, 1000);
+        // setTimeout(()=>{app.ticker.remove(window[timestamp])}, 1000);
         app.ticker.add(window[timestamp]);
       }
 
